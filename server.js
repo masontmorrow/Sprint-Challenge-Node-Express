@@ -102,6 +102,9 @@ server.put('/api/actions/:id', (req, res) => {
         });
 });
 
+
+
+
 // ========== Projects Endpoints =========== //
 
 server.get('/api/projects', (req, res) => {
@@ -112,6 +115,96 @@ server.get('/api/projects', (req, res) => {
         })
         .catch(error => {
             return sendUserError(500, `There was an error processing your request`, res);
+        });
+});
+
+server.get('/api/projects/:id', (req, res) => {
+    const { id } = req.params;
+    projects
+        .get(id)
+        .then(project => {
+            if(project === null) {
+                return sendUserError(404, `The project with the ID ${id} does not exist.`, res);
+                
+            }
+            res.json(project);
+        })
+        .catch(error => {
+            return sendUserError(500, `There was an error processing your request`, res);
+            
+        });
+});
+
+server.get('/api/projects/:id/actions', (req, res) => {
+    const { id } = req.params;
+    projects
+        .getProjectActions(id)
+        .then(project => {
+            if(project === null) {
+                return sendUserError(404, `The project with the ID ${id} does not exist.`, res);
+                
+            }
+            res.json(project);
+        })
+        .catch(error => {
+            return sendUserError(500, `There was an error processing your request`, res);
+            
+        });
+});
+
+server.post('/api/actions/', (req, res) => {
+    const { name, description } = req.body;
+    if(!name || !description) {
+        return sendUserError(400, `Action must have a project ID and a description`, res);
+        
+    }
+    actions
+        .insert({ name, description })
+        .then(response => {
+            res.json(response);
+        })
+        .catch(error => {
+            return sendUserError(500, `There was an error processing your request`, res);
+            
+        });
+});
+
+server.delete('/api/actions/:id', (req, res) => {
+    const { id } = req.params;
+    actions
+        .remove(id)
+        .then(response => {
+            if(response === 0) {
+                return sendUserError(404, `The action with id ${id} does not exist`, res);
+            }
+            res.json({ success: 'Action was removed.'});
+        })
+        .catch(error => {
+            return sendUserError(500, `There was an error processing your request`, res);
+            
+        });
+});
+
+server.put('/api/actions/:id', (req, res) => {
+    const { id } = req.params;
+    const { description, notes, completed } = req.body;
+    actions
+        .update(id, {description, notes, completed })
+        .then(response => {
+            if(response === 0) {
+                return sendUserError(404, `The action with id ${id} does not exist`, res);
+            }
+            actions.get(id)
+                .then(action => {
+                    res.json(action);
+                })
+                .catch(error => {
+                    sendUserError(500, `There was an error processing your request`, res);
+                });
+        })
+        .catch(error => {
+            return sendUserError(500, `There was an error processing your request`, res);
+            
         });
 });
 
