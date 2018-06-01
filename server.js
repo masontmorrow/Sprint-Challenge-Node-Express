@@ -152,14 +152,14 @@ server.get('/api/projects/:id/actions', (req, res) => {
         });
 });
 
-server.post('/api/actions/', (req, res) => {
-    const { name, description } = req.body;
+server.post('/api/projects/', (req, res) => {
+    const { name, description, completed } = req.body;
     if(!name || !description) {
-        return sendUserError(400, `Action must have a project ID and a description`, res);
+        return sendUserError(400, `Project must have a project ID and a description`, res);
         
     }
-    actions
-        .insert({ name, description })
+    projects
+        .insert({ name, description, completed })
         .then(response => {
             res.json(response);
         })
@@ -169,15 +169,15 @@ server.post('/api/actions/', (req, res) => {
         });
 });
 
-server.delete('/api/actions/:id', (req, res) => {
+server.delete('/api/projects/:id', (req, res) => {
     const { id } = req.params;
-    actions
+    projects
         .remove(id)
         .then(response => {
             if(response === 0) {
-                return sendUserError(404, `The action with id ${id} does not exist`, res);
+                return sendUserError(404, `The project with id ${id} does not exist`, res);
             }
-            res.json({ success: 'Action was removed.'});
+            res.json({ success: 'Project was removed.'});
         })
         .catch(error => {
             return sendUserError(500, `There was an error processing your request`, res);
@@ -185,18 +185,18 @@ server.delete('/api/actions/:id', (req, res) => {
         });
 });
 
-server.put('/api/actions/:id', (req, res) => {
+server.put('/api/projects/:id', (req, res) => {
     const { id } = req.params;
-    const { description, notes, completed } = req.body;
-    actions
-        .update(id, {description, notes, completed })
+    const { name, description, completed } = req.body;
+    projects
+        .update(id, { name, description, completed })
         .then(response => {
             if(response === 0) {
-                return sendUserError(404, `The action with id ${id} does not exist`, res);
+                return sendUserError(404, `The project with id ${id} does not exist`, res);
             }
-            actions.get(id)
-                .then(action => {
-                    res.json(action);
+            projects.get(id)
+                .then(project => {
+                    res.json(project);
                 })
                 .catch(error => {
                     sendUserError(500, `There was an error processing your request`, res);
